@@ -11,16 +11,13 @@ from settings import DB_PATH
 conn = get_connection(DB_PATH)
 init_db(conn)
 
-new_id = add_schedule(
-    conn,
-    name="Night sleep",
-    sleep_time="2026-01-01 23:30",
-    wake_time="2026-01-02 07:00",
-    mode="mem",
-    enabled=1
-)
+name = input("Name: ")
+sleep_time = input("Sleep time (YYYY-MM-DD HH:MM): ")
+wake_time = input("Wake time (YYYY-MM-DD HH:MM): ")
+mode = input("Mode (mem/disk/off): ")
+new_id = add_schedule(conn, name, sleep_time, wake_time, mode, enabled=1)
 
-print("schedule ID:", new_id)
+print("Schedule added with ID: " + str(new_id))
 
 print("schedules:")
 for row in list_schedules(conn):
