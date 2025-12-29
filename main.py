@@ -8,7 +8,8 @@ Created on Mon Dec 29 16:57:13 2025
 from db import get_connection, init_db, add_schedule, list_schedules
 from settings import DB_PATH
 from datetime import datetime
-from scheduler import simulate_rtcwake
+from scheduler import Scheduler
+import csv
 
 conn = get_connection(DB_PATH)
 init_db(conn)
@@ -21,6 +22,15 @@ def check_datetime(prompt: str) -> str:
             return dt.strftime("%Y-%m-%d %H:%M")
         except ValueError:
             print("Use format: YYYY-MM-DD HH:MM")
+            
+def export_schedules_csv(conn, path: str, only_enabled: bool = False) -> None:
+    rows = list_schedules(conn, enabled=only_enabled) 
+    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f, delimiter=";")
+        writer.writerow(["id", "name", "sleep_time", "wake_time", "mode", "enabled"])
+        writer.writerows(rows)
+    print("Exported to csv.")
+
 
 name = input("Name: ")
 sleep_time = check_datetime("Sleep time: YYYY-MM-DD HH:MM")
@@ -35,5 +45,9 @@ print("schedules:")
 for row in list_schedules(conn):
     print(row)
 
-simulate_rtcwake(sleep_time, wake_time, mode)
+schedules = list_schedules(conn)
+scheduler = Scheduler(schedules)
+scheduler.simulate_all()
+
+export_schedules_csv(conn, "export_schedules.csv")
 
